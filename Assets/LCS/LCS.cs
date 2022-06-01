@@ -4,15 +4,15 @@ using System.Collections.Generic;
 
 public static class LCS
 {
-    public static int[,] GenerateTable(string from, string to)
+    private static int[,] GenerateScoreMatrix(string a, string b)
     {
-        var table = new int[from.Length + 1, to.Length + 1];
+        var table = new int[a.Length + 1, b.Length + 1];
 
         for (int r = 1; r < table.GetLength(0); r++)
         {
             for (int c = 1; c < table.GetLength(1); c++)
             {
-                table[r, c] = from[r - 1] == to[c - 1]
+                table[r, c] = a[r - 1] == b[c - 1]
                     ? table[r - 1, c - 1] + 1
                     : Math.Max(table[r - 1, c], table[r, c - 1]);
             }
@@ -20,55 +20,37 @@ public static class LCS
 
         return table;
     }
-
-    public static string Find(string from, string to, out List<int> indexes)
+    
+    private static string TracebackPathWithHighestScore(string a, int[,] scoreMatrix)
     {
-        // The data type here should be able to support the max length between row and col inputs
-        var matchTable = new int[from.Length + 1, to.Length + 1];
-
-        for (int r = 1; r < matchTable.GetLength(0); r++)
-        {
-            for (int c = 1; c < matchTable.GetLength(1); c++)
-            {
-                // Fill match table
-                var match = from[r - 1] == to[c - 1];
-                matchTable[r, c] =
-                    match ? matchTable[r - 1, c - 1] + 1 : Math.Max(matchTable[r - 1, c], matchTable[r, c - 1]);
-            }
-        }
-
-        // Bottom up solution seeking
-        indexes = new List<int>();
         var result = new LinkedList<char>();
-        var rr = matchTable.GetLength(0) - 1;
-        var cc = matchTable.GetLength(1) - 1;
+        var rr = scoreMatrix.GetLength(0) - 1;
+        var cc = scoreMatrix.GetLength(1) - 1;
 
-        while (true)
+        while (scoreMatrix[rr, cc] != 0)
         {
-            if (matchTable[rr, cc] == 0)
-            {
-                break;
-            }
-
-            if (matchTable[rr, cc - 1] == matchTable[rr, cc])
+            if (scoreMatrix[rr, cc - 1] == scoreMatrix[rr, cc])
             {
                 cc -= 1;
             }
-            else if (matchTable[rr - 1, cc] == matchTable[rr, cc])
+            else if (scoreMatrix[rr - 1, cc] == scoreMatrix[rr, cc])
             {
                 rr -= 1;
             }
             else
             {
-                result.AddFirst(from[rr - 1]);
-                indexes.Add(rr - 1);
+                result.AddFirst(a[rr - 1]);
                 rr -= 1;
                 cc -= 1;
             }
         }
 
-        indexes.Reverse();
-
         return new string(result.ToArray());
+    }
+
+    public static string Find(string a, string b)
+    {
+        var scoreMatrix = GenerateScoreMatrix(a, b);
+        return TracebackPathWithHighestScore(a, scoreMatrix);;
     }
 }
