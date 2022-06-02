@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public static class LCS
 {
-    private static int[,] GenerateScoreMatrix2(string a, string b)
+    private static int[,] GenerateScoreMatrix(string a, string b)
     {
         var width = a.Length + 1;
         var height = b.Length + 1;
@@ -40,22 +40,25 @@ public static class LCS
     private static string TracebackPathWithHighestScore(string a, int[,] scoreMatrix)
     {
         var result = new LinkedList<char>();
-        var row = scoreMatrix.GetLength(0) - 1;
-        var column = scoreMatrix.GetLength(1) - 1;
+        var row = scoreMatrix.GetLength(1) - 1;
+        var column = scoreMatrix.GetLength(0) - 1;
 
-        while (scoreMatrix[row, column] != 0)
+        while (scoreMatrix[column, row] != 0)
         {
-            if (scoreMatrix[row, column - 1] == scoreMatrix[row, column])
+            if (scoreMatrix[column, row - 1] == scoreMatrix[column, row])
             {
-                column -= 1;
+                // Go to nearest north cell
+                row -= 1; 
             }
-            else if (scoreMatrix[row - 1, column] == scoreMatrix[row, column])
+            else if (scoreMatrix[column - 1, row] == scoreMatrix[column, row])
             {
-                row -= 1;
+                // Go to nearest west cell
+                column -= 1; 
             }
             else
             {
-                result.AddFirst(a[row - 1]);
+                result.AddFirst(a[column - 1]);
+                // Go to nearest north west cell
                 row -= 1;
                 column -= 1;
             }
@@ -66,8 +69,7 @@ public static class LCS
 
     public static string Find(string a, string b)
     {
-        var scoreMatrix = GenerateScoreMatrix2(a, b);
+        var scoreMatrix = GenerateScoreMatrix(a, b);
         return TracebackPathWithHighestScore(a, scoreMatrix);
-        ;
     }
 }
